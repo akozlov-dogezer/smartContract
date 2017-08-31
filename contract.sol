@@ -258,14 +258,15 @@ contract DogezerPreICOCrowdsale is Haltable{
     /*  at initialization, setup the owner */
     function DogezerPreICOCrowdsale(
         uint _startTime,
-        address addressOfTokenUsedAsReward
+        address addressOfTokenUsedAsReward,
+		address addressOfBeneficiary
     ) {
-        beneficiary = 0x35d46aB93209d5AEbD9DF418582104Eff776931c;
+        beneficiary = addressOfBeneficiary;
         startTime = _startTime;
         duration = 10 minutes;
-        fundingGoal = 4097 * 1 ether;
+        fundingGoal = 4000 * 1 ether;
         amountRaised = 0;
-        price = 0.0000000000204876 * 1 ether;
+        price = 0.00000000002 * 1 ether;
         tokenReward = preDGZToken(addressOfTokenUsedAsReward);
     }
 
