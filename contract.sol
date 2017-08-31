@@ -250,7 +250,7 @@ contract DogezerPreICOCrowdsale is Haltable{
 
     mapping(address => uint256) public balanceOf;
 
-    event SaleFinished(uint amountRaised);
+    event SaleFinished(uint finishAmountRaised);
     event FundTransfer(address backer, uint amount, bool isContribution);
     bool public crowdsaleClosed = false;
 
@@ -283,6 +283,7 @@ contract DogezerPreICOCrowdsale is Haltable{
     /* The function without name is the default function that is called whenever anyone sends funds to a contract */
     function () payable stopInEmergency onlyAfterStart onlyBeforeEnd
     {
+		require	(msg.value > 1000000000000000);
         require (crowdsaleClosed == false);
         require (fundingGoal >= amountRaised + msg.value);
         uint amount = msg.value;
@@ -299,7 +300,9 @@ contract DogezerPreICOCrowdsale is Haltable{
  
    function withdrawal (uint amountWithdraw) onlyOwner
    {
-        beneficiary.transfer(amountWithdraw);
+		if (beneficiary.send(amountWithdraw)){
+			FundTransfer(beneficiary, amountWithdraw, false);
+		}
    }
    
    function changeBeneficiary(address newBeneficiary) onlyOwner {
