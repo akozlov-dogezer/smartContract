@@ -257,13 +257,12 @@ contract DogezerPreICOCrowdsale is Haltable{
 
     /*  at initialization, setup the owner */
     function DogezerPreICOCrowdsale(
-        uint _startTime,
         address addressOfTokenUsedAsReward,
 		address addressOfBeneficiary
     ) {
         beneficiary = addressOfBeneficiary;
-        startTime = _startTime;
-        duration = 10 minutes;
+        startTime = 1504270800;
+        duration = 707 hours;
         fundingGoal = 4000 * 1 ether;
         amountRaised = 0;
         price = 0.00000000002 * 1 ether;
@@ -283,7 +282,7 @@ contract DogezerPreICOCrowdsale is Haltable{
     /* The function without name is the default function that is called whenever anyone sends funds to a contract */
     function () payable stopInEmergency onlyAfterStart onlyBeforeEnd
     {
-		require	(msg.value > 1000000000000000);
+		require (msg.value >= 0.002 * 1 ether);
         require (crowdsaleClosed == false);
         require (fundingGoal >= amountRaised + msg.value);
         uint amount = msg.value;
@@ -300,9 +299,7 @@ contract DogezerPreICOCrowdsale is Haltable{
  
    function withdrawal (uint amountWithdraw) onlyOwner
    {
-		if (beneficiary.send(amountWithdraw)){
-			FundTransfer(beneficiary, amountWithdraw, false);
-		}
+		beneficiary.transfer(amountWithdraw);
    }
    
    function changeBeneficiary(address newBeneficiary) onlyOwner {
