@@ -1,5 +1,5 @@
 # Dogezer smart contracts
-PreITO Crowdsale
-ITO Private Sale
-ITO Public (Open) Sale
-Dogezer Platform contract
+1. PreITO Crowdsale
+2. ITO Private Sale
+3. ITO Public (Open) Sale
+4. Dogezer Platform contract
