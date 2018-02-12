@@ -329,14 +329,14 @@ contract DogezerICOPublicCrowdSale is Haltable{
         require (msg.value > 500000000000000);
 
         if ((balanceOf[msg.sender] + msg.value) > maxPurchaseNonWhiteListed && whiteList[msg.sender] == false) 
-		{
+	{
             //Tokens are not being reserved for the purchasers who are not in a whitelist yet
             nonWLBalanceOf[msg.sender] += msg.value;
         } 
-		else 
-		{
+	else 
+	{
             sendTokens(msg.sender, msg.value); 
-		}
+	}
     }
 
 
@@ -349,12 +349,12 @@ contract DogezerICOPublicCrowdSale is Haltable{
     {
         for (uint i = 0; i < _addresses.length; i++)
         {
-			if (nonWLBalanceOf[_addresses[i]] > 0)
-			{
-				sendTokens(_addresses[i], nonWLBalanceOf[_addresses[i]]);
-				nonWLBalanceOf[_addresses[i]] = 0;
-			}
-			whiteList[_addresses[i]] = true;
+	    if (nonWLBalanceOf[_addresses[i]] > 0)
+	    {
+		sendTokens(_addresses[i], nonWLBalanceOf[_addresses[i]]);
+		nonWLBalanceOf[_addresses[i]] = 0;
+	    }
+	    whiteList[_addresses[i]] = true;
         }
     }
 	
@@ -366,12 +366,12 @@ contract DogezerICOPublicCrowdSale is Haltable{
     //	
     function addToWhiteList (address _address) public onlyOwner
     {
-		if (nonWLBalanceOf[_address] > 0)
-		{
-			sendTokens(_address, nonWLBalanceOf[_address]);
-			nonWLBalanceOf[_address] = 0;
-		}
-		whiteList[_address] = true;
+	if (nonWLBalanceOf[_address] > 0)
+	{
+	    sendTokens(_address, nonWLBalanceOf[_address]);
+	    nonWLBalanceOf[_address] = 0;
+	}
+	whiteList[_address] = true;
     }	
     
     
@@ -383,7 +383,7 @@ contract DogezerICOPublicCrowdSale is Haltable{
     {
         require (crowdsaleClosed == false);
         crowdsaleClosed = true;
-		uint totalSold = tokensSoldOnPublicRound + preDGZTokensSold * preDGZtoDGZExchangeRate / 100000000 + privateSalesTokensSold;
+	uint totalSold = tokensSoldOnPublicRound + preDGZTokensSold * preDGZtoDGZExchangeRate / 100000000 + privateSalesTokensSold;
         bountyAmount = totalSold / 980 * 15;
         yearlyTeamAmount= totalSold / 980 * 5 / 3;
     }
@@ -455,7 +455,7 @@ contract DogezerICOPublicCrowdSale is Haltable{
     /////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Exchange contract preDGZ->DGZ tokens
-	// TODO Alex comment
+    // TODO Alex comment
     //
     function manuallyExchangeContractPreDGZtoDGZ(address _address, uint preDGZAmount) public onlyOwner
     {
@@ -537,13 +537,13 @@ contract DogezerICOPublicCrowdSale is Haltable{
             uint tokensAvailable = tokensAvailableForSale - tokensSoldOnPublicRound;
             uint refund = msg_value - (tokensAvailable * currentPrice);
             amountSendTokens = tokensAvailable;
-			tokensSoldOnPublicRound += amountSendTokens;			
+	    tokensSoldOnPublicRound += amountSendTokens;			
             msg_sender.transfer(refund);
             balanceOf[msg_sender] += (msg_value - refund);
         }
         else
         {
-			tokensSoldOnPublicRound += amountSendTokens;			
+	    tokensSoldOnPublicRound += amountSendTokens;			
             balanceOf[msg_sender] += msg_value;
         }
 
@@ -570,8 +570,8 @@ contract DogezerICOPublicCrowdSale is Haltable{
     //
     function refundNonWhitelistedPerson (address _address) public onlyOwner
     {
-		uint refundAmount = nonWLBalanceOf[_address];
-		nonWLBalanceOf[_address] = 0;
+	uint refundAmount = nonWLBalanceOf[_address];
+	nonWLBalanceOf[_address] = 0;
         _address.transfer(refundAmount);
     }
 
