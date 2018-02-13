@@ -174,6 +174,7 @@ contract StandardToken is ERC20, BasicToken {
     return true;
   }
 
+  
   /**
    * @dev Aprove the passed address to spend the specified amount of tokens on behalf of msg.sender.
    * @param _spender The address which will spend the funds.
@@ -192,6 +193,7 @@ contract StandardToken is ERC20, BasicToken {
     return true;
   }
 
+  
   /**
    * @dev Function to check the amount of tokens that an owner allowed to a spender.
    * @param _owner address The address which owns the funds.
@@ -203,10 +205,13 @@ contract StandardToken is ERC20, BasicToken {
   }
 
 }
-/////////////////////////////////////////////////////////////////////////////////////////////
-//
-// Tokens for Test only should be removed. TODO
-//
+
+
+/**
+ * @title DGZToken as ERC20 token
+ * @dev Declare DGZToken token smart contract
+ * @dev for Test only should be removed. TODO
+ */
 contract DGZToken is StandardToken {
     using SafeMath for uint256;
 
@@ -219,10 +224,16 @@ contract DGZToken is StandardToken {
     /*/ Initializes contract with initial supply tokens to the creator of the contract /*/
     function DGZToken() public
     {
-        balances[msg.sender] = totalSupply;              // Give the creator all initial tokens
+        balances[msg.sender] = totalSupply; // Give the creator all initial tokens
     }
 }
-/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/**
+ * @title DGZToken as ERC20 token
+ * @dev Declare DGZToken token smart contract
+ * @dev for Test only should be removed. TODO
+ */
 contract DogezerPlatformContract is Haltable{
     using SafeMath for uint;
 
@@ -249,19 +260,24 @@ contract DogezerPlatformContract is Haltable{
         dogezerMainAccount = addressOfDogezerMainAccount;
         tokenDGZ = StandardToken(addressOfDGZToken);
     }
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Payable function
-    //
-    /* The function without name is the default function that is called whenever anyone sends funds to a contract */
+
+    
+    /**
+     * @title Payable function.
+     * @dev The function without name is the default function that is called whenever anyone sends funds to a contract
+     * @dev Immidiatly refund etherium sent from somwhere
+     */    
     function () payable public
     {
         revert();
     }
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Keep DGZ tokens amount
-    //
+
+    
+    /**
+     * @title submitTokens function.
+     * @dev Main operation function. Burns tokens by special formula and loads Licenses to sender
+     * @param tokenAmount uint A number of income tokens
+     */    
     function submitTokens(uint tokenAmount) public
     {
         uint burnAmount = tokenAmount * burnPercentage / 10000000000;
@@ -278,10 +294,13 @@ contract DogezerPlatformContract is Haltable{
         dgzSpentOf[msg.sender] += tokenAmount;
         LicenseLoad(msg.sender, licenseAmount);
     }
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Change dogezerMainAccount in emergency
-    //
+
+    
+    /**
+     * @title changeDogezerMainAccount function.
+     * @dev Changes Main Account of Dogezer. Owned.
+     * @param _newDogezerMainAccount address New address.
+     */        
     function changeDogezerMainAccount(address _newDogezerMainAccount) public onlyOwner
     {
         if (_newDogezerMainAccount != address(0)) {
@@ -289,20 +308,26 @@ contract DogezerPlatformContract is Haltable{
         }
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Set token sold
-    //
+
+    /**
+     * @title setTokensAfterITO function.
+     * @dev Set number of sold tokens. Owned.
+     * @param _value uint Number of tokens to set sold.
+     */        
     function setTokensAfterITO(uint _value) public onlyOwner
     {
         require(_value > 0);
         tokensAfterITO = _value;
         burnPercentage = 2000000000 + 50 * tokensAfterITO / 100000000;
     }
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Withdraw tokens to dogezerMainAccount
-    //
+
+    
+    /**
+     * @title tokenWithdrawal function.
+     * @dev Withdraw tokens to dogezerMainAccount. Owned.
+     * @param _address address Address of token smart contract.
+     * @param _amount uint Number of tokens to withdraw.
+     */        
     function tokenWithdrawal (address _address, uint _amount) public onlyOwner
     {
         StandardToken token = StandardToken(_address);

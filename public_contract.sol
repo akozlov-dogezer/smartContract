@@ -203,10 +203,12 @@ contract StandardToken is ERC20, BasicToken {
   }
 
 }
-/////////////////////////////////////////////////////////////////////////////////////////////
-//
-// Tokens for Test only should be removed. TODO
-//
+
+/**
+ * @title preDGZToken as ERC20 token
+ * @dev Declare preDGZToken token smart contract
+ * @dev for Test only should be removed. TODO
+ */
 contract preDGZToken is StandardToken {
     using SafeMath for uint256;
 
@@ -223,6 +225,11 @@ contract preDGZToken is StandardToken {
     }
 }
 
+/**
+ * @title DGZToken as ERC20 token
+ * @dev Declare DGZToken token smart contract
+ * @dev for Test only should be removed. TODO
+ */
 contract DGZToken is StandardToken {
     using SafeMath for uint256;
 
@@ -240,7 +247,15 @@ contract DGZToken is StandardToken {
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////
+/**
+ * @title DogezerICOPublicCrowdSale main smart contract constructor
+ * @param beneficiary address The address where funds will withdraw.
+ * @param tokenRewardPreDGZ address The address of PreDGZ token smart contract.
+ * @param tokenReward address The address of DGZ token smart contract.
+ * @param tokensAvailableForSale uint Calculates default amount of DGZ tokens available for sale. 
+ * @param tokensSoldOnPublicRound uint An amount of sold DGZ during contract activity. Equals 0 by default.
+ * 
+ */
 contract DogezerICOPublicCrowdSale is Haltable{
     using SafeMath for uint;
 
@@ -302,10 +317,11 @@ contract DogezerICOPublicCrowdSale is Haltable{
     }
     
     
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Modifiers
-    //
+    /**
+     * @title Modifiers onlyAfterStart and onlyBeforeEnd.
+     * @dev onlyAfterStart check if current time more than contract starts 15/02/2018 13:00 GMT+0.
+     * @dev onlyBeforeEnd check if current time less than contract starts 08/03/2018 13:00 GMT+0.
+     */
     modifier onlyAfterStart() {
         require (now >= startTime);
         _;
@@ -317,11 +333,13 @@ contract DogezerICOPublicCrowdSale is Haltable{
     }
 
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Payable function
-    //
-    /* The function without name is the default function that is called whenever anyone sends funds to a contract */
+    /**
+     * @title Payable function.
+     * @dev Works only during smart contract activity period from 15/02/2018 13:00 GMT+0 to 08/03/2018 13:00 GMT+0.
+     * @dev Blocked if stopInEmergency occured.
+     * @dev If crowdsale is not closed and tokensAvailableForSale amount > tokensSoldOnPublicRound 
+     * @dev and minimum purchase more then 0.0005 ETH function will proceed.
+     */    
     function () payable stopInEmergency onlyAfterStart onlyBeforeEnd public
     {
         require (crowdsaleClosed == false);
@@ -329,70 +347,72 @@ contract DogezerICOPublicCrowdSale is Haltable{
         require (msg.value > 500000000000000);
 
         if ((balanceOf[msg.sender] + msg.value) > maxPurchaseNonWhiteListed && whiteList[msg.sender] == false) 
-	{
-            //Tokens are not being reserved for the purchasers who are not in a whitelist yet
+        {
+            
+            // DGZ tokens are not being reserved for the purchasers who are not in a whitelist yet.
             nonWLBalanceOf[msg.sender] += msg.value;
         } 
-	else 
-	{
+        else 
+        {
             sendTokens(msg.sender, msg.value); 
-	}
+        }
     }
 
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Add multiple addresses to white list to allow purchase for more than 10 ETH
-    // Pass parameters as ["0xca35b7d915458ef540ade6068dfe2f44e8fa733c", "0x14723a09acff6d2a60dcdf7aa4aff308fddc160c"]
-    //
+    /**
+     * @title addListToWhiteList function.
+     * @dev Add multiple addresses to white list to allow purchase for more than 10 ETH.
+     * @param _addresses address[] Pass bunch of etherium addresses as 
+     *        ["0xca35b7d915458ef540ade6068dfe2f44e8fa733c", "0x14723a09acff6d2a60dcdf7aa4aff308fddc160c"] to add to WhiteList
+     */        
     function addListToWhiteList (address[] _addresses) public onlyOwner
     {
         for (uint i = 0; i < _addresses.length; i++)
         {
-	    if (nonWLBalanceOf[_addresses[i]] > 0)
-	    {
-		sendTokens(_addresses[i], nonWLBalanceOf[_addresses[i]]);
-		nonWLBalanceOf[_addresses[i]] = 0;
-	    }
-	    whiteList[_addresses[i]] = true;
+            if (nonWLBalanceOf[_addresses[i]] > 0)
+            {
+                sendTokens(_addresses[i], nonWLBalanceOf[_addresses[i]]);
+                nonWLBalanceOf[_addresses[i]] = 0;
+            }
+            whiteList[_addresses[i]] = true;
         }
     }
-	
-	
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Add single address to white list to allow purchase for more than 10 ETH
-    // 
-    //	
+    
+    
+    /**
+     * @title addToWhiteList function.
+     * @dev Add a single address to white list to allow purchase for more than 10 ETH.
+     * @param _address address An etherium addresses to add to WhiteList
+     */    
     function addToWhiteList (address _address) public onlyOwner
     {
-	if (nonWLBalanceOf[_address] > 0)
-	{
-	    sendTokens(_address, nonWLBalanceOf[_address]);
-	    nonWLBalanceOf[_address] = 0;
-	}
-	whiteList[_address] = true;
-    }	
+        if (nonWLBalanceOf[_address] > 0)
+        {
+            sendTokens(_address, nonWLBalanceOf[_address]);
+            nonWLBalanceOf[_address] = 0;
+        }
+        whiteList[_address] = true;
+    }    
     
     
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Finalize sales and set bounty & yearly paid value
-    //
+    /**
+     * @title finalizeSale function.
+     * @dev Finalize sales and set bounty & yearly paid value. Owned.
+     */        
     function finalizeSale () public onlyOwner
     {
         require (crowdsaleClosed == false);
         crowdsaleClosed = true;
-	uint totalSold = tokensSoldOnPublicRound + preDGZTokensSold * preDGZtoDGZExchangeRate / 100000000 + privateSalesTokensSold;
+        uint totalSold = tokensSoldOnPublicRound + preDGZTokensSold * preDGZtoDGZExchangeRate / 100000000 + privateSalesTokensSold;
         bountyAmount = totalSold / 980 * 15;
         yearlyTeamAmount= totalSold / 980 * 5 / 3;
     }
     
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Burn tokens after sales close
-    //
+    /**
+     * @title tokenBurn function.
+     * @dev Burn tokens after sales close. Owned.
+     */        
     function tokenBurn (uint _amount) public onlyOwner
     {
         require (crowdsaleClosed == true);
@@ -400,10 +420,10 @@ contract DogezerICOPublicCrowdSale is Haltable{
     }
 
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Withdraw bounty tokens after sales close
-    //
+    /**
+     * @title bountyTokenWithdrawal function.
+     * @dev Withdraw bounty tokens after sales close. Owned.
+     */            
     function bountyTokenWithdrawal () public onlyOwner
     {
         require (crowdsaleClosed == true);
@@ -414,10 +434,10 @@ contract DogezerICOPublicCrowdSale is Haltable{
     }
 
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Withdraw yearly tokens after sales close
-    //
+    /**
+     * @title yearlyOwnerTokenWithdrawal function.
+     * @dev Withdraw yearly tokens after sales close. Owned.
+     */        
     function yearlyOwnerTokenWithdrawal () public onlyOwner 
     {
         require (crowdsaleClosed == true);
@@ -437,11 +457,11 @@ contract DogezerICOPublicCrowdSale is Haltable{
             yearlyTeamTokensPaid[2] = true;
     }
 
-	
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Exchange contract preDGZ->DGZ tokens
-    //
+    
+    /**
+     * @title exchangePreDGZTokens function.
+     * @dev Exchange contract preDGZ->DGZ tokens
+     */        
     function exchangePreDGZTokens() stopInEmergency onlyAfterStart public
     {
         uint tokenAmount = tokenRewardPreDGZ.allowance(msg.sender, this);
@@ -451,12 +471,18 @@ contract DogezerICOPublicCrowdSale is Haltable{
         preBalanceOf[msg.sender] += tokenAmount;
         tokenReward.transfer(msg.sender, amountSendTokens);
     }
-	
+    
     /////////////////////////////////////////////////////////////////////////////////////////////
     //
-    // Exchange contract preDGZ->DGZ tokens
+    // 
     // TODO Alex comment
     //
+    /**
+     * @title manuallyExchangeContractPreDGZtoDGZ function.
+     * @dev Manual transfer DGZ tokens depends on amount of PreDGZ tokens sent from previous token holder.
+     * @param _address address Etherium address of PreDGZ sender
+     * @param preDGZAmount uint A PreDGZ amount sender drops to this smart contract
+     */        
     function manuallyExchangeContractPreDGZtoDGZ(address _address, uint preDGZAmount) public onlyOwner
     {
         require (_address != address(0));
@@ -468,10 +494,14 @@ contract DogezerICOPublicCrowdSale is Haltable{
     }
 
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Set token price
-    //
+    /**
+     * @title setTokenPrice function.
+     * @dev Fuction to reset DGZ token price with discounts applied to different periods of this smart contract.
+     * @param week uint Ordinal number of the required week.
+     * @param price uint DGZ token price.
+     * @param price5 uint DGZ token price with 5% discount.
+     * @param price10 uint DGZ token price with 10% discount.
+     */        
     function setTokenPrice (uint week, uint price, uint price5, uint price10) public onlyOwner
     {
         require (crowdsaleClosed == false);
@@ -485,10 +515,11 @@ contract DogezerICOPublicCrowdSale is Haltable{
     }
 
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Set preDGZ to DGZ conversion rate
-    //
+    /**
+     * @title setPreDGZtoDgzRate function.
+     * @dev Set preDGZ to DGZ conversion rate.
+     * @param rate uint Conversion rate.
+     */        
     function setPreDGZtoDgzRate (uint rate) public onlyOwner
     {
         preDGZtoDGZExchangeRate = rate;
@@ -496,10 +527,11 @@ contract DogezerICOPublicCrowdSale is Haltable{
     }
 
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Set number of tokens sold on private sale
-    //
+    /**
+     * @title setPrivateSaleTokensSold function.
+     * @dev Set number of tokens sold on private sale.
+     * @param tokens uint Number of tokens sold on private sale.
+     */            
     function setPrivateSaleTokensSold (uint tokens) public onlyOwner
     {
         privateSalesTokensSold = tokens;
@@ -507,10 +539,12 @@ contract DogezerICOPublicCrowdSale is Haltable{
     }
 
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Function which sends tokens
-    //
+    /**
+     * @title sendTokens function.
+     * @dev Function which sends allowed tokens to msg_sender.
+     * @param msg_sender address Address of PreDGZ holder who allowed it to exchange.
+     * @param msg_value uint Number of DGZ tokens to send.
+     */            
     function sendTokens(address msg_sender, uint msg_value) internal
     {
         var prices = price1stWeek;
@@ -537,13 +571,13 @@ contract DogezerICOPublicCrowdSale is Haltable{
             uint tokensAvailable = tokensAvailableForSale - tokensSoldOnPublicRound;
             uint refund = msg_value - (tokensAvailable * currentPrice);
             amountSendTokens = tokensAvailable;
-	    tokensSoldOnPublicRound += amountSendTokens;			
+            tokensSoldOnPublicRound += amountSendTokens;            
             msg_sender.transfer(refund);
             balanceOf[msg_sender] += (msg_value - refund);
         }
         else
         {
-	    tokensSoldOnPublicRound += amountSendTokens;			
+            tokensSoldOnPublicRound += amountSendTokens;            
             balanceOf[msg_sender] += msg_value;
         }
 
@@ -552,10 +586,11 @@ contract DogezerICOPublicCrowdSale is Haltable{
     }
 
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Withdraw funds to beneficiary.
-    //
+    /**
+     * @title fundWithdrawal function.
+     * @dev Withdraw funds to beneficiary. Owned
+     * @param _amount uint Amount funds to withdraw.
+     */    
     function fundWithdrawal (uint _amount) public onlyOwner
     {
         require (crowdsaleClosed == true);
@@ -564,22 +599,24 @@ contract DogezerICOPublicCrowdSale is Haltable{
     }
 
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Refund funds.
-    //
+    /**
+     * @title refundNonWhitelistedPerson function.
+     * @dev Returns funds to sender who was not whitelisted.
+     * @param _address address Address of refunded person.
+     */        
     function refundNonWhitelistedPerson (address _address) public onlyOwner
     {
-	uint refundAmount = nonWLBalanceOf[_address];
-	nonWLBalanceOf[_address] = 0;
+        uint refundAmount = nonWLBalanceOf[_address];
+        nonWLBalanceOf[_address] = 0;
         _address.transfer(refundAmount);
     }
 
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Withdraw tokens to beneficiary. Would be used to process BTC payments.
-    //
+    /**
+     * @title tokenWithdrawal function.
+     * @dev Withdraw tokens to beneficiary. Would be used to process BTC payments.
+     * @param _amount uint Amount DGZ tokens to withdraw.
+     */    
     function tokenWithdrawal (uint _amount) public onlyOwner
     {
         require (crowdsaleClosed == false);
@@ -589,15 +626,16 @@ contract DogezerICOPublicCrowdSale is Haltable{
     }
 
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Withdraw tokens other than DGZ to beneficiary
-    // Generally need this to handle case when user just send preDGZ to a contract and not calling
-    // the right functions to do the conversion
-    //
+    /**
+     * @title anyTokenWithdrawal function.
+     * @dev Withdraw tokens other than DGZ to beneficiary.
+     * @dev Generally need this to handle case when user just send preDGZ to a contract and not calling
+     * @dev the right functions to do the conversion.
+     * @param _address address Address of tokens smartcontract.
+     * @param _amount uint Amount tokens to withdraw.
+     */        
     function anyTokenWithdrawal (address _address, uint _amount) public onlyOwner
     {
-        //This function is not to be used to withdraw DGZ tokens
         require(_address != address(tokenReward));
 
         StandardToken token = StandardToken(_address);
@@ -605,10 +643,12 @@ contract DogezerICOPublicCrowdSale is Haltable{
         TokensWithdraw(beneficiary, _address, _amount);
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Change beneficiary address
-    //
+
+    /**
+     * @title changeBeneficiary function.
+     * @dev Change beneficiary address. Owned.
+     * @param _newBeneficiary address Address of new beneficiary.
+     */        
     function changeBeneficiary(address _newBeneficiary) public onlyOwner
     {
         if (_newBeneficiary != address(0)) {
@@ -616,10 +656,11 @@ contract DogezerICOPublicCrowdSale is Haltable{
         }
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Repopen sales in emergency
-    //
+
+    /**
+     * @title reopenSale function.
+     * @dev Repopen sales in emergency. Owned.
+     */    
     function reopenSale () public onlyOwner
     {
         require (crowdsaleClosed == true);
