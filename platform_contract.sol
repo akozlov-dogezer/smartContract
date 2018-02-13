@@ -264,10 +264,6 @@ contract DogezerPlatformContract is Haltable{
     //
     function submitTokens(uint tokenAmount) public
     {
-        uint tokenAllowed = tokenDGZ.allowance(msg.sender, this);
-        require(tokenAmount > 0);
-		require (tokenAllowed >= tokenAmount);
-
         uint burnAmount = tokenAmount * burnPercentage / 10000000000;
         uint licenseAmount = tokenAmount * 4 * tokensAfterITO / (tokensAfterITO - tokenBurned - tokenAmount/2);
 
