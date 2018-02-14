@@ -208,9 +208,8 @@ contract StandardToken is ERC20, BasicToken {
 
 
 /**
- * @title DGZToken as ERC20 token
- * @dev Declare DGZToken token smart contract
- * @dev for Test only should be removed. TODO
+ * @title DGZToken, an ERC20 token
+ * @dev For Test only, Should be removed. TODO
  */
 contract DGZToken is StandardToken {
     using SafeMath for uint256;
@@ -230,9 +229,8 @@ contract DGZToken is StandardToken {
 
 
 /**
- * @title DGZToken as ERC20 token
- * @dev Declare DGZToken token smart contract
- * @dev for Test only should be removed. TODO
+ * @title Main platform contract which calculates number of licenses per DGZ token and implement token burning 
+ * when they are used
  */
 contract DogezerPlatformContract is Haltable{
     using SafeMath for uint;
@@ -250,8 +248,7 @@ contract DogezerPlatformContract is Haltable{
     event TokenTransfer(address backer, uint amount);
     event TokenBurn(address backer, uint amount);
     event LicenseLoad(address backer, uint amount);
-
-    /*  at initialization, setup the owner */
+    
     function DogezerPlatformContract(
         address addressOfDGZToken, // DGZToken address
         address addressOfDogezerMainAccount
@@ -263,9 +260,7 @@ contract DogezerPlatformContract is Haltable{
 
     
     /**
-     * @title Payable function.
-     * @dev The function without name is the default function that is called whenever anyone sends funds to a contract
-     * @dev Immidiatly refund etherium sent from somwhere
+     * @notice Default function which rejects incoming ETH. 
      */    
     function () payable public
     {
@@ -274,12 +269,19 @@ contract DogezerPlatformContract is Haltable{
 
     
     /**
-     * @title submitTokens function.
-     * @dev Main operation function. Burns tokens by special formula and loads Licenses to sender
-     * @param tokenAmount uint A number of income tokens
+     * @notice Main function which gets DGZ tokens from caller, burn part of them, transfer remaining part to Dogezer main account
+     * and determines how many licenses person who have send tokens will get
+     * @dev Note that function calculate number of licenses to get for received number of tokens as average value between number of
+     * licenses which should be given before burning in that particular transaction, and number of licenses after burning in the same 
+     * transaction. This is done to save gas and additional calculations for users on what is more profitable for them - send tokens 
+     * one by one and pay more gas, but get a bit more licenses (difference is almost negletable and may be not even noticable due to 
+     * rounding). Splitting is still possible, so if person ready to spend more gas but maximize the licenses received - he may split 
+     * his conversion into a number of smaller conversions.
+     * @param tokenAmount uint A number of tokens to burn
      */    
     function submitTokens(uint tokenAmount) public
     {
+		require(tokenAmount > 0);
         uint burnAmount = tokenAmount * burnPercentage / 10000000000;
         uint licenseAmount = tokenAmount * 4 * tokensAfterITO / (tokensAfterITO - tokenBurned - tokenAmount/2);
 
@@ -297,8 +299,7 @@ contract DogezerPlatformContract is Haltable{
 
     
     /**
-     * @title changeDogezerMainAccount function.
-     * @dev Changes Main Account of Dogezer. Owned.
+     * @notice Changes Main Account address. Owned.
      * @param _newDogezerMainAccount address New address.
      */        
     function changeDogezerMainAccount(address _newDogezerMainAccount) public onlyOwner
@@ -310,8 +311,7 @@ contract DogezerPlatformContract is Haltable{
 
 
     /**
-     * @title setTokensAfterITO function.
-     * @dev Set number of sold tokens. Owned.
+     * @notice Set number of tokens after ITO and calculate burn rate. Owned.
      * @param _value uint Number of tokens to set sold.
      */        
     function setTokensAfterITO(uint _value) public onlyOwner
@@ -323,8 +323,7 @@ contract DogezerPlatformContract is Haltable{
 
     
     /**
-     * @title tokenWithdrawal function.
-     * @dev Withdraw tokens to dogezerMainAccount. Owned.
+     * @notice Withdraws tokens to dogezerMainAccount. Owned.
      * @param _address address Address of token smart contract.
      * @param _amount uint Number of tokens to withdraw.
      */        
@@ -334,4 +333,4 @@ contract DogezerPlatformContract is Haltable{
         token.transfer(dogezerMainAccount, _amount);
         TokenTransfer(dogezerMainAccount, _amount);
     }
-}
+} 
